@@ -172,6 +172,10 @@ for month in range(2, 3):
                 raise
         if (prefix, event) == ('item.body', 'string'):
             text_file.write(value.encode("utf-8"))
+            # TODO quitar enters y tabulaciones y grupos de espacios
+
+            #TODO generar archivo de texto con formato: subreddit_name [TAB] body(sin enters, etc.) y agregar un enter
+
             #sentences = map(limpia, tokenizer.tokenize(value))
             #for sentence in sentences:
             #    words = [w for w in word_tokenize(sentence)]
