@@ -3,6 +3,8 @@ import os
 import codecs
 import nltk
 from nltk.corpus import stopwords
+from gensim import corpora, models
+
 from utils.tiempos import Timer
 from utils.iterators import MyDocumentsIterator
 from utils import preprocessUtilities as preprocess
@@ -47,10 +49,7 @@ def saveFreqDist(freqdist, outputFile, mostCommon=50):
     MAIN
 '''
 
-# TODO Consideramos 1 documento = 1 franja = 1 txt
-# TODO Modelo TF/IDF de documentos
-# TODO Modelo LSA, HDP, LDA de documentos
-# TODO Modelo doc2vec de documentos
+# Consideramos 1 documento = 1 franja = 1 txt
 
 #globalSentences=[]
 totalFiles = len(os.listdir(globalPath))
@@ -100,4 +99,19 @@ print("-> Fin del procesamiento del corpus completo.")
 print("\t-> Tiempo transcurrido: %s\n"%(reloj.display_time()))
 
 
-
+# Modelos "clásicos" aplicables a las tablas de frecuencias para obtener topics
+# TODO Modelo TF/IDF de documentos
+# TODO Modelo LSA, HDP, LDA de documentos
+#dictionary = corpora.Dictionary(MyDocumentsIterator(globalPath))
+# dictionary.save(file +'.dict')
+# corpus = [dictionary.doc2bow(text) for text in documents]
+# corpora.MmCorpus.serialize(file+'.mm', corpus)
+#
+# tfidf = models.TfidfModel(corpus)
+# corpus_tfidf = tfidf[corpus]
+#
+# # MODELS for topic detection
+# #model = models.LsiModel(corpus_tfidf, id2word=dictionary, num_topics=5)
+# #model = models.HdpModel(corpus_tfidf, id2word=dictionary)
+# model = models.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=100)
+# model.print_topics(5)
