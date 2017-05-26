@@ -29,7 +29,7 @@ class Timer(object):
     '''
     Función para sacar un número de segundos "en bonito"
     '''
-    def display_time(self, seconds, granularity=2):
+    def display_time_seconds(self, seconds, granularity=2):
         result = []
         for name, count in self.intervals:
             value = seconds // count
@@ -43,8 +43,8 @@ class Timer(object):
     '''
     Función para sacar el número de segundos medidos "en bonito"
     '''
-    def display_time(self, granularity=2):
-        return self.display_time(self.elapsed_time())
+    def display_time(self):
+        return self.display_time_seconds(self.elapsed_time())
 
     '''
     Comienzo del cronómetro

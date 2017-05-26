@@ -17,7 +17,7 @@ class MyDocumentsIterator(object):
 
     def __iter__(self):
         for filename in os.listdir(self.path):
-            yield [word for line in codecs.open(filename, 'r', 'utf-8') for word in line.lower().split()]
+            yield [word for line in codecs.open(self.path + filename, 'r', 'utf-8') for sent in map(preprocess.limpia,preprocess.tokeniza_frases(line.lower())) for word in preprocess.tokeniza(sent)]
 
 
 class MyDocumentsStopWordsIterator(object):
@@ -35,4 +35,22 @@ class MyDocumentsStopWordsIterator(object):
 
     def __iter__(self):
         for filename in os.listdir(self.path):
-            yield [word for line in codecs.open(filename, 'r', 'utf-8') for word in line.lower().split() if word not in self.stopwords]
+            yield [word for line in codecs.open(self.path + filename, 'r', 'utf-8') for sent in map(preprocess.limpia,preprocess.tokeniza_frases(line.lower())) for word in preprocess.tokeniza(sent) if word not in self.stopwords]
+
+
+
+class MySentenceIterator(object):
+    '''
+    Created on 26 may 2017
+
+    Clase para implementar un iterable de frases: dado un archivo, devuelve una lista de palabras por cada frase del archivo
+
+    @author: F. Javier Ortega
+    '''
+
+    def __init__(self, file):
+        self.file = file
+
+    def __iter__(self):
+        for line in codecs.open(self.file, 'r', 'utf-8'):
+            yield [word for sentence in map(preprocess.limpia,preprocess.tokeniza_frases(line)) for word in preprocess.tokeniza(sentence)]

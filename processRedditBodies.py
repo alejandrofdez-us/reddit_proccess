@@ -1,33 +1,25 @@
 # coding=utf-8
 import os
 import codecs
-import nltk
-from nltk.corpus import stopwords
+
 from gensim import corpora, models
 
 from utils.tiempos import Timer
-from utils.iterators import MyDocumentsIterator
-from utils import preprocessUtilities as preprocess
+from utils.iterators import MyDocumentsIterator, MySentenceIterator
 
 globalPath = "./resources/Bodies/"
-
-tags = set(["NN", "NNS", "NP", "V", "VB", "VBZ", "VBG", "VBP"])
-stopws = set(stopwords.words("english"))
-
 
 def countWordFrequencies(sentences):
     '''
     Computes the frequency distribution of words within a document (list of sentences), filtering by tags and stopwords
-    :param text_file: 
+    :param sentences: Iterador sobre listas de cadenas
     :return: 
     '''
-    total_words = []
-    for sentence in sentences:
-        words = preprocess.tokeniza(sentence)
-        pos = nltk.pos_tag(words)
-        pos_by_tags = [word for word, tag in pos if tag in tags and word not in stopws]
-        total_words.extend(pos_by_tags)
-    return nltk.FreqDist(total_words)  # print(fdist.most_common(50))
+    dictionary = corpora.Dictionary(sentences)
+    corpus = [dictionary.doc2bow(text) for text in sentences]
+    tfidf = models.TfidfModel(corpus)
+
+    return tfidf, dictionary, corpus
 
 
 def saveFreqDist(freqdist, outputFile, mostCommon=50):
@@ -50,10 +42,8 @@ def saveFreqDist(freqdist, outputFile, mostCommon=50):
 '''
 
 # Consideramos 1 documento = 1 franja = 1 txt
-
-#globalSentences=[]
 totalFiles = len(os.listdir(globalPath))
-count = 0;
+count = 0
 print("-> Comenzando a procesar cada archivo del corpus")
 reloj = Timer()
 reloj.start_timer()
@@ -61,26 +51,16 @@ reloj.start_timer()
 for textFilename in os.listdir(globalPath):
     count+=1
     print("\t-> Procesando archivo: %s (%d de %d)"%(textFilename, count, totalFiles))
-
-    text_file = codecs.open(globalPath+textFilename, "r", "utf-8")
-    #text_file = codecs.open(globalPath+"BodiesReddit-60minutes-2009-02-01 01:00:00.txt", "r", "utf-8"
-
-    # Para cada franja horaria, tokenizo en frases
-    sentences = [map(preprocess.limpia, preprocess.tokeniza_frases(line)) for line in text_file]
-    sentences = [item for sent in sentences for item in sent]
-
-    # Vamos acumulando todas las frases de todas las franjas horarias
-#    texto=""
-#    for s in sentences:
-#        texto += " "+s
-#    globalSentences.append(texto)
-
     # Contamos las frecuencias de palabras para cada franja horaria
-    fd_file = countWordFrequencies(sentences)
+    fd_file, dictionary, corpus = countWordFrequencies(MySentenceIterator(globalPath + textFilename))
     # Guardamos las frecuencias de cada archivo en un archivo de tuplas
-    saveFreqDist(fd_file, textFilename+".fdist", mostCommon=500)
+    corpora.MmCorpus.serialize('./resources/fdists/'+textFilename+'.mm', corpus)
+    dictionary.save('./resources/fdists/'+textFilename+ '.dict')
+    fd_file.save('./resources/fdists/'+textFilename+ '.fdist')
 
-    text_file.close()
+    # Esto en realidad no hace mucha falta...
+    model = fd_file[corpus]
+    model.save('./resources/fdists/'+textFilename+ '.fdist.model')
 
 reloj.stop_timer()
 print("-> Fin del procesamiento archivo a archivo.")
@@ -88,26 +68,32 @@ print("\t-> Tiempo transcurrido: %s\n"%(reloj.display_time()))
 
 print("-> Procesando corpus completo...")
 reloj.start_timer()
-# contamos las frecuencias de palabras para el corpus completo
-fdist = countWordFrequencies(MyDocumentsIterator(globalPath))
 
-# Guardamos las frecuencias del corpus en un archivo de tuplas
-saveFreqDist(fdist, "global.fdist", mostCommon=500)
+# contamos las frecuencias de palabras para el corpus completo
+fd_file, dictionary, corpus = countWordFrequencies(MyDocumentsIterator(globalPath))
+
+# Guardamos las frecuencias de cada archivo en un archivo de tuplas
+corpora.MmCorpus.serialize('./resources/fdists/global.mm', corpus)
+dictionary.save('./resources/fdists/global.dict')
+fd_file.save('./resources/fdists/global.fdist')
 
 reloj.stop_timer()
 print("-> Fin del procesamiento del corpus completo.")
 print("\t-> Tiempo transcurrido: %s\n"%(reloj.display_time()))
 
 
+
+
+
 # Modelos "clásicos" aplicables a las tablas de frecuencias para obtener topics
-# TODO Modelo TF/IDF de documentos
+# TODO Eliminar el uso de FreqDist de nltk y utilizar el de Gensim (como se ve a continuación)
 # TODO Modelo LSA, HDP, LDA de documentos
 #dictionary = corpora.Dictionary(MyDocumentsIterator(globalPath))
-# dictionary.save(file +'.dict')
-# corpus = [dictionary.doc2bow(text) for text in documents]
-# corpora.MmCorpus.serialize(file+'.mm', corpus)
+#dictionary.save(file +'.dict')
+#corpus = [dictionary.doc2bow(text) for text in documents]
+#corpora.MmCorpus.serialize(file+'.mm', corpus)
 #
-# tfidf = models.TfidfModel(corpus)
+#tfidf = models.TfidfModel(corpus)
 # corpus_tfidf = tfidf[corpus]
 #
 # # MODELS for topic detection
