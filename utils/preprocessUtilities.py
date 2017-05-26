@@ -16,6 +16,7 @@ def limpia(oracion):
     oracion = re.sub(r"&gt;", r" ", oracion)
     oracion = re.sub(r"&lt;", r" ", oracion)
     oracion = re.sub(r"\.com", r" ", oracion)
+    oracion = re.sub("\[deleted\]", " ", oracion)
     oracion = re.sub(r"[^0-9a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]", " ", oracion)  # Repasar si falta algún carácter latino
     oracion = re.sub(r"(\s)([0-9\.]+)(\s)", r"\1DIGITO\3", oracion)
 
