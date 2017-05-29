@@ -62,4 +62,4 @@ class Timer(object):
     Cálculo del tiempo empleado
     '''
     def elapsed_time(self):
-        return self.start - self.end
+        return self.end - self.start

@@ -66,4 +66,10 @@ def doc2vecTrain(docs, output_file=None):
     MAIN
 '''
 
-doc2vec_model = doc2vecTrain(iterators.MyDocumentsIterator(globalPath) , "./resources/deeplearning/doc2vec.model")
+# Training
+#doc2vec_model = doc2vecTrain(iterators.MyDocumentsIteratorDoc2Vec(globalPath) , "./resources/deeplearning/doc2vec.model")
+
+# Loading model
+doc2vec_model = doc2vec.Doc2Vec.load("./resources/deeplearning/doc2vec.model");
+
+print(doc2vec_model.docvecs.most_similar('BodiesReddit-60minutes-2009-02-01 00:00:00.txt'))
